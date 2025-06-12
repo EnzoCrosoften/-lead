@@ -5,27 +5,136 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Database, Users, BarChart3, Code } from "lucide-react";
+import { Database, Users, BarChart3, Code, GitBranch } from "lucide-react";
 
 const Index = () => {
   const [sqlQuery, setSqlQuery] = useState("");
   const [queryResult, setQueryResult] = useState("");
 
-  // Dados simulados de leads
+  // Dados simulados baseados na estrutura real
   const sampleLeads = [
-    { id: 1, nome: "João Silva", email: "joao@email.com", status: "Novo", origem: "Website", valor_potencial: 5000 },
-    { id: 2, nome: "Maria Santos", email: "maria@email.com", status: "Qualificado", origem: "LinkedIn", valor_potencial: 8000 },
-    { id: 3, nome: "Pedro Costa", email: "pedro@email.com", status: "Negociação", origem: "Referência", valor_potencial: 12000 },
-    { id: 4, nome: "Ana Lima", email: "ana@email.com", status: "Convertido", origem: "Google Ads", valor_potencial: 15000 },
+    { 
+      id: 1, 
+      name: "João Silva - Projeto ERP", 
+      price: 25000.00, 
+      responsible_user_id: 1, 
+      group_id: 1, 
+      status_id: 1, 
+      pipeline_id: 1, 
+      created_by: 1, 
+      created_at: "2024-01-15 10:30:00",
+      account_id: 1
+    },
+    { 
+      id: 2, 
+      name: "Maria Santos - Sistema CRM", 
+      price: 45000.00, 
+      responsible_user_id: 2, 
+      group_id: 1, 
+      status_id: 2, 
+      pipeline_id: 1, 
+      created_by: 1, 
+      created_at: "2024-01-20 14:15:00",
+      account_id: 1
+    },
+    { 
+      id: 3, 
+      name: "Pedro Costa - App Mobile", 
+      price: 80000.00, 
+      responsible_user_id: 1, 
+      group_id: 2, 
+      status_id: 3, 
+      pipeline_id: 1, 
+      created_by: 2, 
+      created_at: "2024-01-25 09:45:00",
+      account_id: 1
+    }
   ];
 
   const executeQuery = () => {
     if (sqlQuery.toLowerCase().includes("select") && sqlQuery.toLowerCase().includes("leads")) {
       setQueryResult(JSON.stringify(sampleLeads, null, 2));
+    } else if (sqlQuery.toLowerCase().includes("select") && sqlQuery.toLowerCase().includes("users")) {
+      const sampleUsers = [
+        { id: 1, name: "Ana Silva", email: "ana@empresa.com", group_id: 1, role_id: 1 },
+        { id: 2, name: "Carlos Santos", email: "carlos@empresa.com", group_id: 1, role_id: 2 }
+      ];
+      setQueryResult(JSON.stringify(sampleUsers, null, 2));
     } else {
-      setQueryResult("Execute uma query SELECT na tabela 'leads' para ver os resultados.");
+      setQueryResult("Execute uma query SELECT em uma das tabelas para ver os resultados simulados.");
     }
   };
+
+  const databaseTables = [
+    {
+      name: "leads",
+      description: "Tabela principal de oportunidades de venda",
+      fields: [
+        { name: "id", type: "BIGINT PRIMARY KEY" },
+        { name: "name", type: "TEXT" },
+        { name: "price", type: "DECIMAL(10,2)" },
+        { name: "responsible_user_id", type: "BIGINT" },
+        { name: "group_id", type: "BIGINT" },
+        { name: "status_id", type: "BIGINT" },
+        { name: "pipeline_id", type: "BIGINT" },
+        { name: "loss_reason_id", type: "BIGINT NULL" },
+        { name: "created_by", type: "BIGINT" },
+        { name: "created_at", type: "TIMESTAMP" },
+        { name: "account_id", type: "BIGINT" }
+      ]
+    },
+    {
+      name: "users",
+      description: "Usuários do sistema",
+      fields: [
+        { name: "id", type: "BIGINT PRIMARY KEY" },
+        { name: "name", type: "TEXT NOT NULL" },
+        { name: "email", type: "TEXT NOT NULL UNIQUE" },
+        { name: "group_id", type: "BIGINT NULL" },
+        { name: "role_id", type: "BIGINT NULL" }
+      ]
+    },
+    {
+      name: "pipelines",
+      description: "Funis de vendas",
+      fields: [
+        { name: "id", type: "BIGINT PRIMARY KEY" },
+        { name: "name", type: "TEXT NOT NULL" }
+      ]
+    },
+    {
+      name: "statuses",
+      description: "Status dos leads por pipeline",
+      fields: [
+        { name: "id", type: "BIGINT PRIMARY KEY" },
+        { name: "name", type: "TEXT NOT NULL" },
+        { name: "pipeline_id", type: "BIGINT" }
+      ]
+    },
+    {
+      name: "contacts",
+      description: "Contatos associados aos leads",
+      fields: [
+        { name: "id", type: "BIGINT PRIMARY KEY" },
+        { name: "name", type: "TEXT NOT NULL" },
+        { name: "created_at", type: "TIMESTAMP NOT NULL" },
+        { name: "created_by", type: "BIGINT NOT NULL" },
+        { name: "phone_number", type: "TEXT NULL" }
+      ]
+    },
+    {
+      name: "events",
+      description: "Log de eventos do sistema",
+      fields: [
+        { name: "id", type: "TEXT PRIMARY KEY" },
+        { name: "entity_id", type: "INT" },
+        { name: "type", type: "TEXT" },
+        { name: "entity_type", type: "TEXT" },
+        { name: "created_at", type: "TIMESTAMP" },
+        { name: "created_by", type: "INT" }
+      ]
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -37,71 +146,87 @@ const Index = () => {
             Sistema CRM - Teste Técnico
           </h1>
           <p className="text-xl text-gray-600">
-            Ferramenta para análise e desenvolvimento de queries SQL para gerenciamento de leads
+            Estrutura completa do banco de dados para análise e desenvolvimento de queries SQL
           </p>
         </div>
 
         <Tabs defaultValue="estrutura" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="estrutura" className="flex items-center gap-2">
               <Database size={16} />
               Estrutura DB
             </TabsTrigger>
-            <TabsTrigger value="leads" className="flex items-center gap-2">
+            <TabsTrigger value="relacionamentos" className="flex items-center gap-2">
+              <GitBranch size={16} />
+              Relacionamentos
+            </TabsTrigger>
+            <TabsTrigger value="dados" className="flex items-center gap-2">
               <Users size={16} />
-              Dados Leads
+              Dados Exemplo
             </TabsTrigger>
             <TabsTrigger value="sql" className="flex items-center gap-2">
               <Code size={16} />
               Editor SQL
             </TabsTrigger>
-            <TabsTrigger value="analise" className="flex items-center gap-2">
+            <TabsTrigger value="queries" className="flex items-center gap-2">
               <BarChart3 size={16} />
-              Análise
+              Queries Úteis
             </TabsTrigger>
           </TabsList>
 
           {/* Estrutura do Banco */}
           <TabsContent value="estrutura">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {databaseTables.map((table) => (
+                <Card key={table.name} className="bg-white/90 backdrop-blur-sm shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-blue-700">{table.name}</CardTitle>
+                    <CardDescription>{table.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {table.fields.map((field) => (
+                        <div key={field.name} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
+                          <span className="font-mono">{field.name}</span>
+                          <Badge variant="outline" className="text-xs">{field.type}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Relacionamentos */}
+          <TabsContent value="relacionamentos">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-blue-700">Tabela: leads</CardTitle>
-                  <CardDescription>Estrutura principal para gerenciamento de leads</CardDescription>
+                  <CardTitle className="text-green-700">Relacionamentos Principais</CardTitle>
+                  <CardDescription>Foreign Keys e conexões entre tabelas</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
-                      <span className="font-mono">id</span>
-                      <Badge variant="outline">INT PRIMARY KEY</Badge>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <h4 className="font-semibold text-green-800 mb-2">leads → users</h4>
+                      <p className="text-sm text-gray-600">responsible_user_id, created_by</p>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">nome</span>
-                      <Badge variant="outline">VARCHAR(100)</Badge>
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-2">leads → statuses</h4>
+                      <p className="text-sm text-gray-600">status_id</p>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">email</span>
-                      <Badge variant="outline">VARCHAR(150)</Badge>
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <h4 className="font-semibold text-purple-800 mb-2">statuses → pipelines</h4>
+                      <p className="text-sm text-gray-600">pipeline_id (FK com CASCADE)</p>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">telefone</span>
-                      <Badge variant="outline">VARCHAR(20)</Badge>
+                    <div className="p-3 bg-orange-50 rounded-lg">
+                      <h4 className="font-semibold text-orange-800 mb-2">users → roles</h4>
+                      <p className="text-sm text-gray-600">role_id (FK com SET NULL)</p>
                     </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">status</span>
-                      <Badge variant="outline">ENUM</Badge>
-                    </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">origem</span>
-                      <Badge variant="outline">VARCHAR(50)</Badge>
-                    </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">valor_potencial</span>
-                      <Badge variant="outline">DECIMAL(10,2)</Badge>
-                    </div>
-                    <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                      <span className="font-mono">data_criacao</span>
-                      <Badge variant="outline">DATETIME</Badge>
+                    <div className="p-3 bg-red-50 rounded-lg">
+                      <h4 className="font-semibold text-red-800 mb-2">lead_custom_fields → leads</h4>
+                      <p className="text-sm text-gray-600">lead_id (Campos customizados)</p>
                     </div>
                   </div>
                 </CardContent>
@@ -109,30 +234,39 @@ const Index = () => {
 
               <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-green-700">Status dos Leads</CardTitle>
-                  <CardDescription>Possíveis valores para o campo status</CardDescription>
+                  <CardTitle className="text-indigo-700">Tabelas de Apoio</CardTitle>
+                  <CardDescription>Tabelas auxiliares e de log</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Novo</Badge>
-                    <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Em Contato</Badge>
-                    <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">Qualificado</Badge>
-                    <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">Proposta</Badge>
-                    <Badge className="bg-indigo-100 text-indigo-800 hover:bg-indigo-200">Negociação</Badge>
-                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Convertido</Badge>
-                    <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Perdido</Badge>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-indigo-50 rounded-lg">
+                      <h4 className="font-semibold text-indigo-800 mb-2">lead_tags</h4>
+                      <p className="text-sm text-gray-600">Tags associadas aos leads</p>
+                    </div>
+                    <div className="p-3 bg-teal-50 rounded-lg">
+                      <h4 className="font-semibold text-teal-800 mb-2">events</h4>
+                      <p className="text-sm text-gray-600">Log de eventos por entidade</p>
+                    </div>
+                    <div className="p-3 bg-cyan-50 rounded-lg">
+                      <h4 className="font-semibold text-cyan-800 mb-2">events_values</h4>
+                      <p className="text-sm text-gray-600">Valores antes/depois dos eventos</p>
+                    </div>
+                    <div className="p-3 bg-yellow-50 rounded-lg">
+                      <h4 className="font-semibold text-yellow-800 mb-2">update_log</h4>
+                      <p className="text-sm text-gray-600">Controle de atualizações por tabela</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* Dados dos Leads */}
-          <TabsContent value="leads">
+          {/* Dados de Exemplo */}
+          <TabsContent value="dados">
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
               <CardHeader>
                 <CardTitle>Dados de Exemplo - Leads</CardTitle>
-                <CardDescription>Amostra de dados para análise e desenvolvimento de queries</CardDescription>
+                <CardDescription>Amostra baseada na estrutura real do teste técnico</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -141,23 +275,23 @@ const Index = () => {
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 p-2 text-left">ID</th>
                         <th className="border border-gray-300 p-2 text-left">Nome</th>
-                        <th className="border border-gray-300 p-2 text-left">Email</th>
+                        <th className="border border-gray-300 p-2 text-left">Preço</th>
+                        <th className="border border-gray-300 p-2 text-left">Responsável</th>
                         <th className="border border-gray-300 p-2 text-left">Status</th>
-                        <th className="border border-gray-300 p-2 text-left">Origem</th>
-                        <th className="border border-gray-300 p-2 text-left">Valor Potencial</th>
+                        <th className="border border-gray-300 p-2 text-left">Pipeline</th>
+                        <th className="border border-gray-300 p-2 text-left">Criado em</th>
                       </tr>
                     </thead>
                     <tbody>
                       {sampleLeads.map((lead) => (
                         <tr key={lead.id} className="hover:bg-gray-50">
                           <td className="border border-gray-300 p-2">{lead.id}</td>
-                          <td className="border border-gray-300 p-2">{lead.nome}</td>
-                          <td className="border border-gray-300 p-2">{lead.email}</td>
-                          <td className="border border-gray-300 p-2">
-                            <Badge variant="outline">{lead.status}</Badge>
-                          </td>
-                          <td className="border border-gray-300 p-2">{lead.origem}</td>
-                          <td className="border border-gray-300 p-2">R$ {lead.valor_potencial.toLocaleString()}</td>
+                          <td className="border border-gray-300 p-2">{lead.name}</td>
+                          <td className="border border-gray-300 p-2">R$ {lead.price.toLocaleString()}</td>
+                          <td className="border border-gray-300 p-2">{lead.responsible_user_id}</td>
+                          <td className="border border-gray-300 p-2">{lead.status_id}</td>
+                          <td className="border border-gray-300 p-2">{lead.pipeline_id}</td>
+                          <td className="border border-gray-300 p-2">{lead.created_at}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -173,18 +307,23 @@ const Index = () => {
               <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-purple-700">Editor de Query SQL</CardTitle>
-                  <CardDescription>Escreva e teste suas queries aqui</CardDescription>
+                  <CardDescription>Teste suas queries baseadas na estrutura real</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Textarea
                     placeholder="-- Exemplo:
-SELECT nome, email, status, valor_potencial 
-FROM leads 
-WHERE status = 'Convertido' 
-ORDER BY valor_potencial DESC;"
+SELECT 
+    l.name,
+    l.price,
+    u.name as responsavel,
+    s.name as status
+FROM leads l
+JOIN users u ON l.responsible_user_id = u.id
+JOIN statuses s ON l.status_id = s.id
+ORDER BY l.price DESC;"
                     value={sqlQuery}
                     onChange={(e) => setSqlQuery(e.target.value)}
-                    className="font-mono min-h-[200px]"
+                    className="font-mono min-h-[250px]"
                   />
                   <Button onClick={executeQuery} className="w-full bg-purple-600 hover:bg-purple-700">
                     Executar Query
@@ -195,10 +334,10 @@ ORDER BY valor_potencial DESC;"
               <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-green-700">Resultado da Query</CardTitle>
-                  <CardDescription>Resultado simulado baseado nos dados de exemplo</CardDescription>
+                  <CardDescription>Resultado simulado baseado na estrutura</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm min-h-[250px]">
                     {queryResult || "Execute uma query para ver os resultados aqui..."}
                   </pre>
                 </CardContent>
@@ -206,73 +345,95 @@ ORDER BY valor_potencial DESC;"
             </div>
           </TabsContent>
 
-          {/* Análise */}
-          <TabsContent value="analise">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-blue-700">Total de Leads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-blue-600">{sampleLeads.length}</div>
-                </CardContent>
-              </Card>
+          {/* Queries Úteis */}
+          <TabsContent value="queries">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-blue-700">Total de Leads</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-blue-600">{sampleLeads.length}</div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-green-700">Valor Total</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-green-600">
+                      R$ {sampleLeads.reduce((sum, lead) => sum + lead.price, 0).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-purple-700">Ticket Médio</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-purple-600">
+                      R$ {Math.round(sampleLeads.reduce((sum, lead) => sum + lead.price, 0) / sampleLeads.length).toLocaleString()}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
               <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-green-700">Taxa de Conversão</CardTitle>
+                  <CardTitle>Exemplos de Queries para Teste Técnico</CardTitle>
+                  <CardDescription>Queries comuns baseadas na estrutura real do banco</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-600">
-                    {Math.round((sampleLeads.filter(lead => lead.status === 'Convertido').length / sampleLeads.length) * 100)}%
-                  </div>
-                </CardContent>
-              </Card>
+                  <div className="space-y-4">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-2">1. Leads com informações do responsável:</h4>
+                      <code className="text-sm bg-white p-2 rounded block">
+                        SELECT l.name, l.price, u.name as responsavel, u.email 
+                        FROM leads l 
+                        JOIN users u ON l.responsible_user_id = u.id;
+                      </code>
+                    </div>
+                    
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-2">2. Leads por status com nome do pipeline:</h4>
+                      <code className="text-sm bg-white p-2 rounded block">
+                        SELECT s.name as status, p.name as pipeline, COUNT(l.id) as quantidade
+                        FROM leads l 
+                        JOIN statuses s ON l.status_id = s.id
+                        JOIN pipelines p ON s.pipeline_id = p.id
+                        GROUP BY s.name, p.name;
+                      </code>
+                    </div>
+                    
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-2">3. Histórico de eventos por lead:</h4>
+                      <code className="text-sm bg-white p-2 rounded block">
+                        SELECT l.name, e.type, e.created_at, ev.value_before, ev.value_after
+                        FROM leads l
+                        JOIN events e ON l.id = e.entity_id AND e.entity_type = 'lead'
+                        LEFT JOIN events_values ev ON e.id = ev.event_id
+                        ORDER BY e.created_at DESC;
+                      </code>
+                    </div>
 
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-purple-700">Valor Total Potencial</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-purple-600">
-                    R$ {sampleLeads.reduce((sum, lead) => sum + lead.valor_potencial, 0).toLocaleString()}
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-2">4. Performance por usuário:</h4>
+                      <code className="text-sm bg-white p-2 rounded block">
+                        SELECT u.name, COUNT(l.id) as total_leads, 
+                        SUM(l.price) as valor_total,
+                        AVG(l.price) as ticket_medio
+                        FROM users u
+                        LEFT JOIN leads l ON u.id = l.responsible_user_id
+                        GROUP BY u.id, u.name;
+                      </code>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            <Card className="bg-white/90 backdrop-blur-sm shadow-lg mt-6">
-              <CardHeader>
-                <CardTitle>Exemplos de Queries Úteis para CRM</CardTitle>
-                <CardDescription>Queries comuns para análise de leads e vendas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold mb-2">1. Leads por Status:</h4>
-                    <code className="text-sm bg-white p-2 rounded block">
-                      SELECT status, COUNT(*) as quantidade FROM leads GROUP BY status;
-                    </code>
-                  </div>
-                  
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold mb-2">2. Top 5 Leads por Valor:</h4>
-                    <code className="text-sm bg-white p-2 rounded block">
-                      SELECT nome, valor_potencial FROM leads ORDER BY valor_potencial DESC LIMIT 5;
-                    </code>
-                  </div>
-                  
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <h4 className="font-semibold mb-2">3. Taxa de Conversão por Origem:</h4>
-                    <code className="text-sm bg-white p-2 rounded block">
-                      SELECT origem, COUNT(*) as total, 
-                      SUM(CASE WHEN status = 'Convertido' THEN 1 ELSE 0 END) as convertidos
-                      FROM leads GROUP BY origem;
-                    </code>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
