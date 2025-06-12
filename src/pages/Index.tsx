@@ -1,297 +1,335 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Database, Users, BarChart3, Code, GitBranch } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Users, 
+  DollarSign, 
+  TrendingUp, 
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Eye
+} from "lucide-react";
+
+interface Lead {
+  id: number;
+  name: string;
+  price: number;
+  responsible_user_id: number;
+  group_id: number;
+  status_id: number;
+  pipeline_id: number;
+  created_at: string;
+  account_id: number;
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  group_id: number;
+  role_id: number;
+}
+
+interface Pipeline {
+  id: number;
+  name: string;
+}
+
+interface Status {
+  id: number;
+  name: string;
+  pipeline_id: number;
+}
 
 const Index = () => {
-  const [sqlQuery, setSqlQuery] = useState("");
-  const [queryResult, setQueryResult] = useState("");
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
-  // Dados simulados baseados na estrutura real
-  const sampleLeads = [
-    { 
-      id: 1, 
-      name: "João Silva - Projeto ERP", 
-      price: 25000.00, 
-      responsible_user_id: 1, 
-      group_id: 1, 
-      status_id: 1, 
-      pipeline_id: 1, 
-      created_by: 1, 
-      created_at: "2024-01-15 10:30:00",
-      account_id: 1
-    },
-    { 
-      id: 2, 
-      name: "Maria Santos - Sistema CRM", 
-      price: 45000.00, 
-      responsible_user_id: 2, 
-      group_id: 1, 
-      status_id: 2, 
-      pipeline_id: 1, 
-      created_by: 1, 
-      created_at: "2024-01-20 14:15:00",
-      account_id: 1
-    },
-    { 
-      id: 3, 
-      name: "Pedro Costa - App Mobile", 
-      price: 80000.00, 
-      responsible_user_id: 1, 
-      group_id: 2, 
-      status_id: 3, 
-      pipeline_id: 1, 
-      created_by: 2, 
-      created_at: "2024-01-25 09:45:00",
-      account_id: 1
-    }
-  ];
+  // Simular dados iniciais (substitua pelas calls das APIs reais)
+  useEffect(() => {
+    loadInitialData();
+  }, []);
 
-  const executeQuery = () => {
-    if (sqlQuery.toLowerCase().includes("select") && sqlQuery.toLowerCase().includes("leads")) {
-      setQueryResult(JSON.stringify(sampleLeads, null, 2));
-    } else if (sqlQuery.toLowerCase().includes("select") && sqlQuery.toLowerCase().includes("users")) {
-      const sampleUsers = [
+  const loadInitialData = async () => {
+    setLoading(true);
+    try {
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Dados simulados baseados na estrutura das APIs
+      setLeads([
+        {
+          id: 1,
+          name: "João Silva - Projeto ERP",
+          price: 25000.00,
+          responsible_user_id: 1,
+          group_id: 1,
+          status_id: 1,
+          pipeline_id: 1,
+          created_at: "2024-01-15T10:30:00Z",
+          account_id: 1
+        },
+        {
+          id: 2,
+          name: "Maria Santos - Sistema CRM",
+          price: 45000.00,
+          responsible_user_id: 2,
+          group_id: 1,
+          status_id: 2,
+          pipeline_id: 1,
+          created_at: "2024-01-20T14:15:00Z",
+          account_id: 1
+        }
+      ]);
+
+      setUsers([
         { id: 1, name: "Ana Silva", email: "ana@empresa.com", group_id: 1, role_id: 1 },
         { id: 2, name: "Carlos Santos", email: "carlos@empresa.com", group_id: 1, role_id: 2 }
-      ];
-      setQueryResult(JSON.stringify(sampleUsers, null, 2));
-    } else {
-      setQueryResult("Execute uma query SELECT em uma das tabelas para ver os resultados simulados.");
+      ]);
+
+      setPipelines([
+        { id: 1, name: "Vendas Principal" }
+      ]);
+
+      setStatuses([
+        { id: 1, name: "Qualificação", pipeline_id: 1 },
+        { id: 2, name: "Proposta", pipeline_id: 1 },
+        { id: 3, name: "Negociação", pipeline_id: 1 }
+      ]);
+
+      toast({
+        title: "Dados carregados",
+        description: "Dados do CRM carregados com sucesso!"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar dados",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const databaseTables = [
-    {
-      name: "leads",
-      description: "Tabela principal de oportunidades de venda",
-      fields: [
-        { name: "id", type: "BIGINT PRIMARY KEY" },
-        { name: "name", type: "TEXT" },
-        { name: "price", type: "DECIMAL(10,2)" },
-        { name: "responsible_user_id", type: "BIGINT" },
-        { name: "group_id", type: "BIGINT" },
-        { name: "status_id", type: "BIGINT" },
-        { name: "pipeline_id", type: "BIGINT" },
-        { name: "loss_reason_id", type: "BIGINT NULL" },
-        { name: "created_by", type: "BIGINT" },
-        { name: "created_at", type: "TIMESTAMP" },
-        { name: "account_id", type: "BIGINT" }
-      ]
-    },
-    {
-      name: "users",
-      description: "Usuários do sistema",
-      fields: [
-        { name: "id", type: "BIGINT PRIMARY KEY" },
-        { name: "name", type: "TEXT NOT NULL" },
-        { name: "email", type: "TEXT NOT NULL UNIQUE" },
-        { name: "group_id", type: "BIGINT NULL" },
-        { name: "role_id", type: "BIGINT NULL" }
-      ]
-    },
-    {
-      name: "pipelines",
-      description: "Funis de vendas",
-      fields: [
-        { name: "id", type: "BIGINT PRIMARY KEY" },
-        { name: "name", type: "TEXT NOT NULL" }
-      ]
-    },
-    {
-      name: "statuses",
-      description: "Status dos leads por pipeline",
-      fields: [
-        { name: "id", type: "BIGINT PRIMARY KEY" },
-        { name: "name", type: "TEXT NOT NULL" },
-        { name: "pipeline_id", type: "BIGINT" }
-      ]
-    },
-    {
-      name: "contacts",
-      description: "Contatos associados aos leads",
-      fields: [
-        { name: "id", type: "BIGINT PRIMARY KEY" },
-        { name: "name", type: "TEXT NOT NULL" },
-        { name: "created_at", type: "TIMESTAMP NOT NULL" },
-        { name: "created_by", type: "BIGINT NOT NULL" },
-        { name: "phone_number", type: "TEXT NULL" }
-      ]
-    },
-    {
-      name: "events",
-      description: "Log de eventos do sistema",
-      fields: [
-        { name: "id", type: "TEXT PRIMARY KEY" },
-        { name: "entity_id", type: "INT" },
-        { name: "type", type: "TEXT" },
-        { name: "entity_type", type: "TEXT" },
-        { name: "created_at", type: "TIMESTAMP" },
-        { name: "created_by", type: "INT" }
-      ]
-    }
-  ];
+  const filteredLeads = leads.filter(lead =>
+    lead.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalValue = leads.reduce((sum, lead) => sum + lead.price, 0);
+  const averageTicket = leads.length > 0 ? totalValue / leads.length : 0;
+
+  const getUserName = (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    return user ? user.name : `Usuário ${userId}`;
+  };
+
+  const getStatusName = (statusId: number) => {
+    const status = statuses.find(s => s.id === statusId);
+    return status ? status.name : `Status ${statusId}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-            <Database className="text-blue-600" size={40} />
-            Sistema CRM - Teste Técnico
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Sistema CRM - Dashboard
           </h1>
           <p className="text-xl text-gray-600">
-            Estrutura completa do banco de dados para análise e desenvolvimento de queries SQL
+            Gestão completa de leads e oportunidades
           </p>
         </div>
 
-        <Tabs defaultValue="estrutura" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="estrutura" className="flex items-center gap-2">
-              <Database size={16} />
-              Estrutura DB
-            </TabsTrigger>
-            <TabsTrigger value="relacionamentos" className="flex items-center gap-2">
-              <GitBranch size={16} />
-              Relacionamentos
-            </TabsTrigger>
-            <TabsTrigger value="dados" className="flex items-center gap-2">
-              <Users size={16} />
-              Dados Exemplo
-            </TabsTrigger>
-            <TabsTrigger value="sql" className="flex items-center gap-2">
-              <Code size={16} />
-              Editor SQL
-            </TabsTrigger>
-            <TabsTrigger value="queries" className="flex items-center gap-2">
-              <BarChart3 size={16} />
-              Queries Úteis
-            </TabsTrigger>
+        {/* Cards de Métricas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Leads</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{leads.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {leads.length > 0 ? "+12% desde o último mês" : "Nenhum lead ainda"}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R$ {totalValue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Pipeline de vendas
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ticket Médio</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">R$ {Math.round(averageTicket).toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">
+                Por oportunidade
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="leads" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="leads">Leads</TabsTrigger>
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+            <TabsTrigger value="pipelines">Pipelines</TabsTrigger>
+            <TabsTrigger value="relatorios">Relatórios</TabsTrigger>
           </TabsList>
 
-          {/* Estrutura do Banco */}
-          <TabsContent value="estrutura">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {databaseTables.map((table) => (
-                <Card key={table.name} className="bg-white/90 backdrop-blur-sm shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-blue-700">{table.name}</CardTitle>
-                    <CardDescription>{table.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {table.fields.map((field) => (
-                        <div key={field.name} className="flex justify-between items-center p-2 bg-gray-50 rounded text-sm">
-                          <span className="font-mono">{field.name}</span>
-                          <Badge variant="outline" className="text-xs">{field.type}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          {/* Relacionamentos */}
-          <TabsContent value="relacionamentos">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-green-700">Relacionamentos Principais</CardTitle>
-                  <CardDescription>Foreign Keys e conexões entre tabelas</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-green-50 rounded-lg">
-                      <h4 className="font-semibold text-green-800 mb-2">leads → users</h4>
-                      <p className="text-sm text-gray-600">responsible_user_id, created_by</p>
-                    </div>
-                    <div className="p-3 bg-blue-50 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2">leads → statuses</h4>
-                      <p className="text-sm text-gray-600">status_id</p>
-                    </div>
-                    <div className="p-3 bg-purple-50 rounded-lg">
-                      <h4 className="font-semibold text-purple-800 mb-2">statuses → pipelines</h4>
-                      <p className="text-sm text-gray-600">pipeline_id (FK com CASCADE)</p>
-                    </div>
-                    <div className="p-3 bg-orange-50 rounded-lg">
-                      <h4 className="font-semibold text-orange-800 mb-2">users → roles</h4>
-                      <p className="text-sm text-gray-600">role_id (FK com SET NULL)</p>
-                    </div>
-                    <div className="p-3 bg-red-50 rounded-lg">
-                      <h4 className="font-semibold text-red-800 mb-2">lead_custom_fields → leads</h4>
-                      <p className="text-sm text-gray-600">lead_id (Campos customizados)</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-indigo-700">Tabelas de Apoio</CardTitle>
-                  <CardDescription>Tabelas auxiliares e de log</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-indigo-50 rounded-lg">
-                      <h4 className="font-semibold text-indigo-800 mb-2">lead_tags</h4>
-                      <p className="text-sm text-gray-600">Tags associadas aos leads</p>
-                    </div>
-                    <div className="p-3 bg-teal-50 rounded-lg">
-                      <h4 className="font-semibold text-teal-800 mb-2">events</h4>
-                      <p className="text-sm text-gray-600">Log de eventos por entidade</p>
-                    </div>
-                    <div className="p-3 bg-cyan-50 rounded-lg">
-                      <h4 className="font-semibold text-cyan-800 mb-2">events_values</h4>
-                      <p className="text-sm text-gray-600">Valores antes/depois dos eventos</p>
-                    </div>
-                    <div className="p-3 bg-yellow-50 rounded-lg">
-                      <h4 className="font-semibold text-yellow-800 mb-2">update_log</h4>
-                      <p className="text-sm text-gray-600">Controle de atualizações por tabela</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Dados de Exemplo */}
-          <TabsContent value="dados">
+          {/* Aba de Leads */}
+          <TabsContent value="leads">
             <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
               <CardHeader>
-                <CardTitle>Dados de Exemplo - Leads</CardTitle>
-                <CardDescription>Amostra baseada na estrutura real do teste técnico</CardDescription>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <CardTitle>Gerenciar Leads</CardTitle>
+                    <CardDescription>
+                      Lista de todas as oportunidades de venda
+                    </CardDescription>
+                  </div>
+                  <Button className="flex items-center gap-2">
+                    <Plus size={16} />
+                    Novo Lead
+                  </Button>
+                </div>
+                
+                {/* Barra de pesquisa */}
+                <div className="flex gap-4 mt-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Pesquisar leads..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Filter size={16} />
+                    Filtros
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="text-center py-8">Carregando leads...</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3">Nome</th>
+                          <th className="text-left p-3">Valor</th>
+                          <th className="text-left p-3">Responsável</th>
+                          <th className="text-left p-3">Status</th>
+                          <th className="text-left p-3">Criado em</th>
+                          <th className="text-left p-3">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredLeads.map((lead) => (
+                          <tr key={lead.id} className="border-b hover:bg-gray-50">
+                            <td className="p-3 font-medium">{lead.name}</td>
+                            <td className="p-3">R$ {lead.price.toLocaleString()}</td>
+                            <td className="p-3">{getUserName(lead.responsible_user_id)}</td>
+                            <td className="p-3">
+                              <Badge variant="outline">
+                                {getStatusName(lead.status_id)}
+                              </Badge>
+                            </td>
+                            <td className="p-3">
+                              {new Date(lead.created_at).toLocaleDateString('pt-BR')}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="outline">
+                                  <Eye size={14} />
+                                </Button>
+                                <Button size="sm" variant="outline">
+                                  <Edit size={14} />
+                                </Button>
+                                <Button size="sm" variant="outline">
+                                  <Trash2 size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Aba de Usuários */}
+          <TabsContent value="usuarios">
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+              <CardHeader>
+                <CardTitle>Usuários do Sistema</CardTitle>
+                <CardDescription>
+                  Gerenciar usuários e permissões
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300">
+                  <table className="w-full">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-300 p-2 text-left">ID</th>
-                        <th className="border border-gray-300 p-2 text-left">Nome</th>
-                        <th className="border border-gray-300 p-2 text-left">Preço</th>
-                        <th className="border border-gray-300 p-2 text-left">Responsável</th>
-                        <th className="border border-gray-300 p-2 text-left">Status</th>
-                        <th className="border border-gray-300 p-2 text-left">Pipeline</th>
-                        <th className="border border-gray-300 p-2 text-left">Criado em</th>
+                      <tr className="border-b">
+                        <th className="text-left p-3">Nome</th>
+                        <th className="text-left p-3">Email</th>
+                        <th className="text-left p-3">Grupo</th>
+                        <th className="text-left p-3">Role</th>
+                        <th className="text-left p-3">Ações</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {sampleLeads.map((lead) => (
-                        <tr key={lead.id} className="hover:bg-gray-50">
-                          <td className="border border-gray-300 p-2">{lead.id}</td>
-                          <td className="border border-gray-300 p-2">{lead.name}</td>
-                          <td className="border border-gray-300 p-2">R$ {lead.price.toLocaleString()}</td>
-                          <td className="border border-gray-300 p-2">{lead.responsible_user_id}</td>
-                          <td className="border border-gray-300 p-2">{lead.status_id}</td>
-                          <td className="border border-gray-300 p-2">{lead.pipeline_id}</td>
-                          <td className="border border-gray-300 p-2">{lead.created_at}</td>
+                      {users.map((user) => (
+                        <tr key={user.id} className="border-b hover:bg-gray-50">
+                          <td className="p-3 font-medium">{user.name}</td>
+                          <td className="p-3">{user.email}</td>
+                          <td className="p-3">Grupo {user.group_id}</td>
+                          <td className="p-3">Role {user.role_id}</td>
+                          <td className="p-3">
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">
+                                <Edit size={14} />
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -301,139 +339,81 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          {/* Editor SQL */}
-          <TabsContent value="sql">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-purple-700">Editor de Query SQL</CardTitle>
-                  <CardDescription>Teste suas queries baseadas na estrutura real</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Textarea
-                    placeholder="-- Exemplo:
-SELECT 
-    l.name,
-    l.price,
-    u.name as responsavel,
-    s.name as status
-FROM leads l
-JOIN users u ON l.responsible_user_id = u.id
-JOIN statuses s ON l.status_id = s.id
-ORDER BY l.price DESC;"
-                    value={sqlQuery}
-                    onChange={(e) => setSqlQuery(e.target.value)}
-                    className="font-mono min-h-[250px]"
-                  />
-                  <Button onClick={executeQuery} className="w-full bg-purple-600 hover:bg-purple-700">
-                    Executar Query
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-green-700">Resultado da Query</CardTitle>
-                  <CardDescription>Resultado simulado baseado na estrutura</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto text-sm min-h-[250px]">
-                    {queryResult || "Execute uma query para ver os resultados aqui..."}
-                  </pre>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Aba de Pipelines */}
+          <TabsContent value="pipelines">
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+              <CardHeader>
+                <CardTitle>Pipelines de Venda</CardTitle>
+                <CardDescription>
+                  Configurar funis e status de venda
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pipelines.map((pipeline) => (
+                    <div key={pipeline.id} className="border rounded-lg p-4">
+                      <h3 className="font-semibold mb-3">{pipeline.name}</h3>
+                      <div className="flex gap-2 flex-wrap">
+                        {statuses
+                          .filter(status => status.pipeline_id === pipeline.id)
+                          .map((status) => (
+                            <Badge key={status.id} variant="secondary">
+                              {status.name}
+                            </Badge>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Queries Úteis */}
-          <TabsContent value="queries">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-blue-700">Total de Leads</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-blue-600">{sampleLeads.length}</div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-green-700">Valor Total</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-600">
-                      R$ {sampleLeads.reduce((sum, lead) => sum + lead.price, 0).toLocaleString()}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-purple-700">Ticket Médio</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-purple-600">
-                      R$ {Math.round(sampleLeads.reduce((sum, lead) => sum + lead.price, 0) / sampleLeads.length).toLocaleString()}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
-                <CardHeader>
-                  <CardTitle>Exemplos de Queries para Teste Técnico</CardTitle>
-                  <CardDescription>Queries comuns baseadas na estrutura real do banco</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold mb-2">1. Leads com informações do responsável:</h4>
-                      <code className="text-sm bg-white p-2 rounded block">
-                        SELECT l.name, l.price, u.name as responsavel, u.email 
-                        FROM leads l 
-                        JOIN users u ON l.responsible_user_id = u.id;
-                      </code>
-                    </div>
-                    
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold mb-2">2. Leads por status com nome do pipeline:</h4>
-                      <code className="text-sm bg-white p-2 rounded block">
-                        SELECT s.name as status, p.name as pipeline, COUNT(l.id) as quantidade
-                        FROM leads l 
-                        JOIN statuses s ON l.status_id = s.id
-                        JOIN pipelines p ON s.pipeline_id = p.id
-                        GROUP BY s.name, p.name;
-                      </code>
-                    </div>
-                    
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold mb-2">3. Histórico de eventos por lead:</h4>
-                      <code className="text-sm bg-white p-2 rounded block">
-                        SELECT l.name, e.type, e.created_at, ev.value_before, ev.value_after
-                        FROM leads l
-                        JOIN events e ON l.id = e.entity_id AND e.entity_type = 'lead'
-                        LEFT JOIN events_values ev ON e.id = ev.event_id
-                        ORDER BY e.created_at DESC;
-                      </code>
-                    </div>
-
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <h4 className="font-semibold mb-2">4. Performance por usuário:</h4>
-                      <code className="text-sm bg-white p-2 rounded block">
-                        SELECT u.name, COUNT(l.id) as total_leads, 
-                        SUM(l.price) as valor_total,
-                        AVG(l.price) as ticket_medio
-                        FROM users u
-                        LEFT JOIN leads l ON u.id = l.responsible_user_id
-                        GROUP BY u.id, u.name;
-                      </code>
+          {/* Aba de Relatórios */}
+          <TabsContent value="relatorios">
+            <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+              <CardHeader>
+                <CardTitle>Relatórios e Análises</CardTitle>
+                <CardDescription>
+                  Insights sobre performance de vendas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold mb-2">Conversão por Status</h4>
+                    <div className="space-y-2">
+                      {statuses.map((status) => {
+                        const leadsInStatus = leads.filter(l => l.status_id === status.id).length;
+                        const percentage = leads.length > 0 ? (leadsInStatus / leads.length) * 100 : 0;
+                        return (
+                          <div key={status.id} className="flex justify-between">
+                            <span>{status.name}</span>
+                            <span>{percentage.toFixed(1)}%</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-semibold mb-2">Performance por Usuário</h4>
+                    <div className="space-y-2">
+                      {users.map((user) => {
+                        const userLeads = leads.filter(l => l.responsible_user_id === user.id);
+                        const userValue = userLeads.reduce((sum, lead) => sum + lead.price, 0);
+                        return (
+                          <div key={user.id} className="flex justify-between">
+                            <span>{user.name}</span>
+                            <span>R$ {userValue.toLocaleString()}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
