@@ -1,11 +1,10 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { 
   Users, 
   DollarSign, 
@@ -17,113 +16,25 @@ import {
   Trash2,
   Eye
 } from "lucide-react";
-
-interface Lead {
-  id: number;
-  name: string;
-  price: number;
-  responsible_user_id: number;
-  group_id: number;
-  status_id: number;
-  pipeline_id: number;
-  created_at: string;
-  account_id: number;
-}
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  group_id: number;
-  role_id: number;
-}
-
-interface Pipeline {
-  id: number;
-  name: string;
-}
-
-interface Status {
-  id: number;
-  name: string;
-  pipeline_id: number;
-}
+import { useCrmData } from "@/hooks/useCrmData";
+import { LeadForm } from "@/components/LeadForm";
+import { Lead } from "@/services/api";
 
 const Index = () => {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
-  const [statuses, setStatuses] = useState<Status[]>([]);
-  const [loading, setLoading] = useState(false);
+  const {
+    leads,
+    users,
+    pipelines,
+    statuses,
+    isLoading,
+    createLead,
+    updateLead,
+    deleteLead,
+  } = useCrmData();
+
   const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
-
-  // Simular dados iniciais (substitua pelas calls das APIs reais)
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
-    setLoading(true);
-    try {
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Dados simulados baseados na estrutura das APIs
-      setLeads([
-        {
-          id: 1,
-          name: "João Silva - Projeto ERP",
-          price: 25000.00,
-          responsible_user_id: 1,
-          group_id: 1,
-          status_id: 1,
-          pipeline_id: 1,
-          created_at: "2024-01-15T10:30:00Z",
-          account_id: 1
-        },
-        {
-          id: 2,
-          name: "Maria Santos - Sistema CRM",
-          price: 45000.00,
-          responsible_user_id: 2,
-          group_id: 1,
-          status_id: 2,
-          pipeline_id: 1,
-          created_at: "2024-01-20T14:15:00Z",
-          account_id: 1
-        }
-      ]);
-
-      setUsers([
-        { id: 1, name: "Ana Silva", email: "ana@empresa.com", group_id: 1, role_id: 1 },
-        { id: 2, name: "Carlos Santos", email: "carlos@empresa.com", group_id: 1, role_id: 2 }
-      ]);
-
-      setPipelines([
-        { id: 1, name: "Vendas Principal" }
-      ]);
-
-      setStatuses([
-        { id: 1, name: "Qualificação", pipeline_id: 1 },
-        { id: 2, name: "Proposta", pipeline_id: 1 },
-        { id: 3, name: "Negociação", pipeline_id: 1 }
-      ]);
-
-      toast({
-        title: "Dados carregados",
-        description: "Dados do CRM carregados com sucesso!"
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao carregar dados",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | undefined>(undefined);
 
   const filteredLeads = leads.filter(lead =>
     lead.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -141,6 +52,42 @@ const Index = () => {
     const status = statuses.find(s => s.id === statusId);
     return status ? status.name : `Status ${statusId}`;
   };
+
+  const handleCreateLead = (leadData: Omit<Lead, 'id' | 'created_at'>) => {
+    createLead(leadData);
+  };
+
+  const handleUpdateLead = (leadData: Omit<Lead, 'id' | 'created_at'>) => {
+    if (editingLead) {
+      updateLead({ id: editingLead.id, data: leadData });
+      setEditingLead(undefined);
+    }
+  };
+
+  const handleDeleteLead = (id: number) => {
+    deleteLead(id);
+  };
+
+  const openEditForm = (lead: Lead) => {
+    setEditingLead(lead);
+    setIsLeadFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsLeadFormOpen(false);
+    setEditingLead(undefined);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-xl text-gray-600">Carregando dados do CRM...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -216,7 +163,10 @@ const Index = () => {
                       Lista de todas as oportunidades de venda
                     </CardDescription>
                   </div>
-                  <Button className="flex items-center gap-2">
+                  <Button 
+                    className="flex items-center gap-2"
+                    onClick={() => setIsLeadFormOpen(true)}
+                  >
                     <Plus size={16} />
                     Novo Lead
                   </Button>
@@ -240,54 +190,75 @@ const Index = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Carregando leads...</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-3">Nome</th>
-                          <th className="text-left p-3">Valor</th>
-                          <th className="text-left p-3">Responsável</th>
-                          <th className="text-left p-3">Status</th>
-                          <th className="text-left p-3">Criado em</th>
-                          <th className="text-left p-3">Ações</th>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-3">Nome</th>
+                        <th className="text-left p-3">Valor</th>
+                        <th className="text-left p-3">Responsável</th>
+                        <th className="text-left p-3">Status</th>
+                        <th className="text-left p-3">Criado em</th>
+                        <th className="text-left p-3">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredLeads.map((lead) => (
+                        <tr key={lead.id} className="border-b hover:bg-gray-50">
+                          <td className="p-3 font-medium">{lead.name}</td>
+                          <td className="p-3">R$ {lead.price.toLocaleString()}</td>
+                          <td className="p-3">{getUserName(lead.responsible_user_id)}</td>
+                          <td className="p-3">
+                            <Badge variant="outline">
+                              {getStatusName(lead.status_id)}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            {new Date(lead.created_at).toLocaleDateString('pt-BR')}
+                          </td>
+                          <td className="p-3">
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline">
+                                <Eye size={14} />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => openEditForm(lead)}
+                              >
+                                <Edit size={14} />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o lead "{lead.name}"? 
+                                      Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteLead(lead.id)}
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {filteredLeads.map((lead) => (
-                          <tr key={lead.id} className="border-b hover:bg-gray-50">
-                            <td className="p-3 font-medium">{lead.name}</td>
-                            <td className="p-3">R$ {lead.price.toLocaleString()}</td>
-                            <td className="p-3">{getUserName(lead.responsible_user_id)}</td>
-                            <td className="p-3">
-                              <Badge variant="outline">
-                                {getStatusName(lead.status_id)}
-                              </Badge>
-                            </td>
-                            <td className="p-3">
-                              {new Date(lead.created_at).toLocaleDateString('pt-BR')}
-                            </td>
-                            <td className="p-3">
-                              <div className="flex gap-2">
-                                <Button size="sm" variant="outline">
-                                  <Eye size={14} />
-                                </Button>
-                                <Button size="sm" variant="outline">
-                                  <Edit size={14} />
-                                </Button>
-                                <Button size="sm" variant="outline">
-                                  <Trash2 size={14} />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -416,6 +387,17 @@ const Index = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Lead Form */}
+        <LeadForm
+          isOpen={isLeadFormOpen}
+          onClose={closeForm}
+          onSubmit={editingLead ? handleUpdateLead : handleCreateLead}
+          users={users}
+          statuses={statuses}
+          pipelines={pipelines}
+          lead={editingLead}
+        />
       </div>
     </div>
   );
